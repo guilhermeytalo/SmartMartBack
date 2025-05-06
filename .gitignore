@@ -1,3 +1,7 @@
 app/__pycache__/main.cpython-313.pyc
 app/interfaces/routes/__pycache__/products.cpython-313.pyc
 .env
+app/__pycache__/main.cpython-311.pyc
+.gitignore
+app/interfaces/routes/__pycache__/products.cpython-311.pyc
+README.md
