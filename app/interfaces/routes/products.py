@@ -4,10 +4,12 @@ from pydantic import BaseModel
 router = APIRouter()
 
 class ProductDTO(BaseModel):
+    id: int
     name: str
+    description: str
     price: float
-    cost: float
-    category: str
+    category_id: str
+    brand: str
 
 @router.post("/products")
 def create_product(product: ProductDTO):
