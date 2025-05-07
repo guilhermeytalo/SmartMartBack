@@ -21,7 +21,8 @@ def create_product(product_dto: ProductCreateDTO, db: Session = Depends(get_db))
         description=product_dto.description,
         price=product_dto.price,
         quantity=product_dto.quantity,
-        category_id=product_dto.category_id
+        category_id=product_dto.category_id,
+        brand=product_dto.brand
     )
     
     # Return response
@@ -31,5 +32,6 @@ def create_product(product_dto: ProductCreateDTO, db: Session = Depends(get_db))
         description=product.description,
         price=product.price,
         quantity=product.quantity,
-        category_id=product.category_id
+        category_id=product.category_id,
+        brand=product.brand
     )
