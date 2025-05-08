@@ -35,7 +35,7 @@ def upgrade() -> None:
         sa.Column('description', sa.String(length=500), nullable=True),
         sa.Column('price', sa.Float, nullable=False),
         sa.Column('quantity', sa.Integer, nullable=False),
-        sa.Column('category_id', sa.Integer, sa.ForeignKey('categories.id'), nullable=True),
+        sa.Column('category_id', sa.Integer, sa.ForeignKey('categories.id'), nullable=False),
         sa.Column('brand', sa.String(length=255), nullable=False),
     )
 

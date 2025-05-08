@@ -8,14 +8,14 @@ from app.infrastructure.db.models.category import CategoryModel
 
 router = APIRouter(tags=["Products"])
 
+
 @router.post("/products", response_model=ProductResponseDTO)
 def create_product(
-    product_data: ProductCreateDTO, 
-    db: Session = Depends(get_db)
+        product_data: ProductCreateDTO,
+        db: Session = Depends(get_db)
 ):
-     
     if isinstance(product_data.category, CategoryRefDTO):
-        
+
         if product_data.category.id:
             category = db.query(CategoryModel).get(product_data.category.id)
         else:
@@ -29,29 +29,34 @@ def create_product(
                 detail="Category not found. Provide a valid ID/name or create a new one."
             )
     else:
-        
+
         existing_category = db.query(CategoryModel).filter_by(
             name=product_data.category.name
         ).first()
-        
+
         if existing_category:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Category '{product_data.category.name}' already exists."
             )
-        
+
         category = CategoryModel(**product_data.category.model_dump())
         db.add(category)
-        db.flush() 
+        db.flush()
 
-    
     product = ProductModel(
         **product_data.model_dump(exclude={"category"}),
         category_id=category.id
     )
-    
+
     db.add(product)
     db.commit()
     db.refresh(product)
-    
+
     return product
+
+
+@router.get("/products", response_model=list[ProductResponseDTO])
+def get_all_products(db: Session = Depends(get_db)):
+    from app.application.use_cases.list_products import list_products
+    return list_products(db)

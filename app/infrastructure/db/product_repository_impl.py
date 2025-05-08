@@ -8,7 +8,7 @@ from app.infrastructure.db.models.product import ProductModel
 class SQLAlchemyProductRepository(ProductRepository):
     def __init__(self, db: Session):
         self.db = db
-        
+
     def create(self, product: Product) -> Product:
         db_product = ProductModel(
             name=product.name,
@@ -21,7 +21,7 @@ class SQLAlchemyProductRepository(ProductRepository):
         self.db.add(db_product)
         self.db.commit()
         self.db.refresh(db_product)
-        
+
         return Product(
             id=db_product.id,
             name=db_product.name,
@@ -31,7 +31,7 @@ class SQLAlchemyProductRepository(ProductRepository):
             category_id=db_product.category_id,
             brand=db_product.brand
         )
-    
+
     def get_by_id(self, id: int) -> Optional[Product]:
         db_product = self.db.query(ProductModel).filter(ProductModel.id == id).first()
         if db_product is None:
