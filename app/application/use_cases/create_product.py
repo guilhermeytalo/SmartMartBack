@@ -6,12 +6,13 @@ class CreateProductUseCase:
         self.product_repository = product_repository
         
     def execute(self, name: str, description: str, price: float, 
-                quantity: int, category_id: int = None) -> Product:
+                quantity: int, brand: str, category_id: int = None) -> Product:
         product = Product(
             name=name,
             description=description,
             price=price,
             quantity=quantity,
+            brand=brand,
             category_id=category_id
         )
         

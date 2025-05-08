@@ -13,3 +13,5 @@ class ProductModel(Base):
     quantity = Column(Integer, default=0)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     brand = Column(String, nullable=False)
+    
+    category = relationship("CategoryModel", back_populates="products")

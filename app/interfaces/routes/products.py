@@ -1,37 +1,57 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.infrastructure.db.database import get_db
-from app.interfaces.dtos.product_dto import ProductCreateDTO, ProductResponseDTO
-from app.domain.repositories.product_repository import ProductRepository
-from app.infrastructure.db.product_repository_impl import SQLAlchemyProductRepository
-from app.application.use_cases.create_product import CreateProductUseCase
+from app.interfaces.dtos.product_dto import ProductCreateDTO, ProductResponseDTO, CategoryRefDTO
+from app.infrastructure.db.models.product import ProductModel
+from app.infrastructure.db.models.category import CategoryModel
 
 router = APIRouter(tags=["Products"])
 
 @router.post("/products", response_model=ProductResponseDTO)
-def create_product(product_dto: ProductCreateDTO, db: Session = Depends(get_db)):
-    # Create repository with db session
-    product_repository = SQLAlchemyProductRepository(db)
+def create_product(
+    product_data: ProductCreateDTO, 
+    db: Session = Depends(get_db)
+):
+     
+    if isinstance(product_data.category, CategoryRefDTO):
+        
+        if product_data.category.id:
+            category = db.query(CategoryModel).get(product_data.category.id)
+        else:
+            category = db.query(CategoryModel).filter_by(
+                name=product_data.category.name
+            ).first()
+
+        if not category:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Category not found. Provide a valid ID/name or create a new one."
+            )
+    else:
+        
+        existing_category = db.query(CategoryModel).filter_by(
+            name=product_data.category.name
+        ).first()
+        
+        if existing_category:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Category '{product_data.category.name}' already exists."
+            )
+        
+        category = CategoryModel(**product_data.category.model_dump())
+        db.add(category)
+        db.flush() 
+
     
-    # Create and execute use case
-    use_case = CreateProductUseCase(product_repository)
-    product = use_case.execute(
-        name=product_dto.name,
-        description=product_dto.description,
-        price=product_dto.price,
-        quantity=product_dto.quantity,
-        category_id=product_dto.category_id,
-        brand=product_dto.brand
+    product = ProductModel(
+        **product_data.model_dump(exclude={"category"}),
+        category_id=category.id
     )
     
-    # Return response
-    return ProductResponseDTO(
-        id=product.id,
-        name=product.name,
-        description=product.description,
-        price=product.price,
-        quantity=product.quantity,
-        category_id=product.category_id,
-        brand=product.brand
-    )
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+    
+    return product

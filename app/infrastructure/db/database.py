@@ -12,6 +12,9 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+from app.infrastructure.db.models.product import ProductModel 
+from app.infrastructure.db.models.category import CategoryModel
+
 def get_db():
     db = SessionLocal()
     try:
