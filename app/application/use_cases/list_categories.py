@@ -1,9 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.infrastructure.db.models.category import CategoryModel
-from app.infrastructure.db.models.product import ProductModel
-from app.interfaces.dtos.product_dto import ProductResponseDTO, CategoryResponseDTO
-from app.domain.services.profit_calculator import calculate_profit
+from app.interfaces.dtos.product_dto import CategoryResponseDTO
 
 
 def list_categories(db: Session):

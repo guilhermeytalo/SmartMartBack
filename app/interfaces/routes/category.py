@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.infrastructure.db.database import get_db
-from app.interfaces.dtos.product_dto import ProductCreateDTO, ProductResponseDTO, CategoryResponseDTO
-from app.infrastructure.db.models.product import ProductModel
-from app.infrastructure.db.models.category import CategoryModel
+from app.interfaces.dtos.product_dto import CategoryResponseDTO
 
 router = APIRouter(tags=["Categories"])
 

@@ -1,15 +1,15 @@
+import csv
 import os
+from io import StringIO
 
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from fastapi.responses import FileResponse
-import csv
 from sqlalchemy.orm import Session
-from io import StringIO
-from pydantic import ValidationError
+
 from app.infrastructure.db.database import get_db
-from app.interfaces.dtos.product_dto import ProductCreateDTO, ProductResponseDTO, CategoryResponseDTO, CategoryCreateDTO
-from app.infrastructure.db.models.product import ProductModel
 from app.infrastructure.db.models.category import CategoryModel
+from app.infrastructure.db.models.product import ProductModel
+from app.interfaces.dtos.product_dto import ProductCreateDTO, ProductResponseDTO, CategoryResponseDTO
 
 router = APIRouter(tags=["Products"])
 

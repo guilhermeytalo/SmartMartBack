@@ -9,7 +9,7 @@ def list_products(db: Session):
     result = []
 
     for product in products:
-        product_data = ProductResponseDTO.from_orm(product)
+        product_data = ProductResponseDTO.model_validate(product)
         profit = calculate_profit(product.price, product.quantity)
         product_dict = product_data.model_dump()
         product_dict["profit"] = profit
