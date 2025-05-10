@@ -7,3 +7,5 @@ app/interfaces/routes/__pycache__/products.cpython-311.pyc
 README.md
 
 .idea
+/static/*
+!static/sample_products.csv

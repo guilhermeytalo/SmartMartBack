@@ -7,9 +7,13 @@ class CategoryCreateDTO(BaseModel):
     description: Optional[str] = Field(None, max_length=500)
 
 
-class CategoryRefDTO(BaseModel):
+class CategoryResponseDTO(BaseModel):
     id: Optional[int] = None
     name: Optional[str] = None
+
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class ProductCreateDTO(BaseModel):
@@ -18,7 +22,7 @@ class ProductCreateDTO(BaseModel):
     price: float = Field(..., gt=0)
     brand: str = Field(..., min_length=1, max_length=100)
     quantity: int = Field(0, ge=0)
-    category: Union[CategoryRefDTO, CategoryCreateDTO]
+    category: Union[CategoryResponseDTO, CategoryCreateDTO]
 
 
 class ProductResponseDTO(BaseModel):

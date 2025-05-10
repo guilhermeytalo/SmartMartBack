@@ -11,7 +11,7 @@ def list_products(db: Session):
     for product in products:
         product_data = ProductResponseDTO.from_orm(product)
         profit = calculate_profit(product.price, product.quantity)
-        product_dict = product_data.dict()
+        product_dict = product_data.model_dump()
         product_dict["profit"] = profit
         result.append(product_dict)
 
