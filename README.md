@@ -181,4 +181,4 @@ docker-compose down -v
 - **Alembic**: Para controle de migrações do banco de dados.
 
 ## Deploy
-Você pode ver a API aqui neste [link](https://smartmartbackonrender.com/docs)
+Você pode ver a API aqui neste [link](https://smartmartback.onrender.com/docs)
