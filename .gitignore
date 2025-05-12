@@ -4,7 +4,6 @@ app/interfaces/routes/__pycache__
 app/__pycache__/main.cpython-311.pyc
 .gitignore
 app/interfaces/routes/__pycache__/products.cpython-311.pyc
-README.md
 
 .idea
 /static/*
