@@ -15,6 +15,10 @@ from app.interfaces.dtos.product_dto import ProductCreateDTO, ProductResponseDTO
 router = APIRouter(tags=["Products"])
 
 
+def validation_error(row_idx: int, message: str) -> HTTPException:
+    return HTTPException(status_code=422, detail=f"Row {row_idx}: {message}")
+
+
 @router.post("/products", response_model=ProductResponseDTO)
 def create_product(
         product_data: ProductCreateDTO,
@@ -64,14 +68,13 @@ def create_product(
 
 @router.get("/products", response_model=PaginatedProductsResponseDTO)
 def get_all_products(
-    page: int = Query(1, ge=1),
-    per_page: int = Query(10, gt=0),
-    db: Session = Depends(get_db),
+        page: int = Query(1, ge=1),
+        per_page: int = Query(10, gt=0),
+        db: Session = Depends(get_db),
 ):
     from app.application.use_cases.list_products import list_products
     skip = (page - 1) * per_page
     return list_products(db, skip=skip, limit=per_page)
-
 
 
 @router.post("/products/import-csv", status_code=201)
@@ -83,7 +86,7 @@ def import_products_from_csv(
     Import products from a CSV file.
 
     CSV format expected:
-    id,name,description,price,category_id,brand,quantity
+    id,name,description,price,category_id,category_name(if need to create a new),brand,quantity
 
     Category handling rules:
     - If the category_id exists, it will use that category
@@ -114,38 +117,35 @@ def import_products_from_csv(
         try:
             for field in ["name", "price", "brand"]:
                 if field not in row or not row[field]:
-                    return {"detail": f"Row {idx}: Missing required field '{field}'"}
+                    raise validation_error(idx, f"Missing required field '{field}'")
 
             category_id_str = row.get("category_id")
             category_name = row.get("category_name")
 
             if not category_id_str:
-                return {"detail": f"Row {idx}: Missing required field 'category_id'"}
+                raise validation_error(idx, "Missing required field 'category_id'")
 
             try:
                 category_id = int(category_id_str)
             except ValueError:
-                return {"detail": f"Row {idx}: Invalid category_id format '{category_id_str}'"}
+                raise validation_error(idx, f"Invalid category_id format '{category_id_str}'")
 
             if category_id in existing_categories:
                 category = existing_categories[category_id]
 
                 if category_name and category.name.lower() != category_name.lower():
-                    return {
-                        "detail": f"Row {idx}: Category ID/name mismatch. ID {category_id} belongs to '{category.name}', not '{category_name}'."
-                    }
-            else:
+                    raise validation_error(idx,
+                                           f"Category ID/name mismatch. ID {category_id} belongs to '{category.name}', not '{category_name}'.")
 
+            else:
                 if category_name and category_name.lower() in category_names_to_id:
                     existing_id = category_names_to_id[category_name.lower()]
-                    return {
-                        "detail": f"Row {idx}: Cannot create category with ID {category_id} and name '{category_name}'. A category with this name already exists with ID {existing_id}."
-                    }
+                    raise validation_error(idx,
+                                           f"Cannot create category with ID {category_id} and name '{category_name}'. A category with this name already exists with ID {existing_id}.")
 
                 if not category_name:
-                    return {
-                        "detail": f"Row {idx}: Category ID {category_id} not found. Please provide a category name to create it."
-                    }
+                    raise validation_error(idx,
+                                           f"Category ID {category_id} not found. Please provide a category name to create it.")
 
                 new_category = CategoryModel(id=category_id, name=category_name)
                 db.add(new_category)
@@ -153,7 +153,6 @@ def import_products_from_csv(
 
                 existing_categories[category_id] = new_category
                 category_names_to_id[category_name.lower()] = category_id
-
                 category = new_category
 
             try:
@@ -167,13 +166,15 @@ def import_products_from_csv(
                 )
                 products_to_create.append(product)
             except ValueError as e:
-                return {"detail": f"Row {idx}: Invalid data format - {str(e)}"}
+                raise validation_error(idx, f"Invalid data format - {str(e)}")
 
+        except HTTPException:
+            raise
         except Exception as e:
-            return {"detail": f"Row {idx}: Unexpected error - {str(e)}"}
+            raise HTTPException(status_code=500, detail=f"Row {idx}: Unexpected error - {str(e)}")
 
     if not products_to_create:
-        return {"detail": "No valid products found in CSV."}
+        raise HTTPException(status_code=400, detail="No valid products found in CSV.")
 
     try:
         db.bulk_save_objects(products_to_create)
@@ -181,7 +182,8 @@ def import_products_from_csv(
         return {"message": f"Successfully imported {len(products_to_create)} products."}
     except Exception as e:
         db.rollback()
-        return {"detail": f"Database error: {str(e)}"}
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
 
 @router.get("/products/sample-csv", response_class=FileResponse)
 def download_sample_csv():
