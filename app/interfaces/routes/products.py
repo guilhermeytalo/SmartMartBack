@@ -2,14 +2,15 @@ import csv
 import os
 from io import StringIO
 
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.infrastructure.db.database import get_db
 from app.infrastructure.db.models.category import CategoryModel
 from app.infrastructure.db.models.product import ProductModel
-from app.interfaces.dtos.product_dto import ProductCreateDTO, ProductResponseDTO, CategoryResponseDTO
+from app.interfaces.dtos.product_dto import ProductCreateDTO, ProductResponseDTO, CategoryResponseDTO, \
+    PaginatedProductsResponseDTO
 
 router = APIRouter(tags=["Products"])
 
@@ -61,10 +62,16 @@ def create_product(
     return product
 
 
-@router.get("/products", response_model=list[ProductResponseDTO])
-def get_all_products(db: Session = Depends(get_db)):
+@router.get("/products", response_model=PaginatedProductsResponseDTO)
+def get_all_products(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(10, gt=0),
+    db: Session = Depends(get_db),
+):
     from app.application.use_cases.list_products import list_products
-    return list_products(db)
+    skip = (page - 1) * per_page
+    return list_products(db, skip=skip, limit=per_page)
+
 
 
 @router.post("/products/import-csv", status_code=201)

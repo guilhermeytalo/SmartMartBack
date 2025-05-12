@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 
 class CategoryCreateDTO(BaseModel):
@@ -38,3 +38,8 @@ class ProductResponseDTO(BaseModel):
     model_config = {
         "from_attributes": True,
     }
+
+
+class PaginatedProductsResponseDTO(BaseModel):
+    items: List[ProductResponseDTO]
+    total: int
