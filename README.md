@@ -145,9 +145,10 @@ dashboard-backend/
 Você pode importar produtos utilizando um arquivo CSV. O formato esperado é:
 
 ```csv
-id,name,description,price,category_id,category_name,brand,quantity
+id,name,description,price,category_id,category_name*,brand,quantity
 1,Samsung 65" QLED TV,65-inch 4K Smart TV with HDR,1299.99,1,TVs,Samsung,10
 ```
+* O **category_name** só é necessário caso vá criar uma nova categoria
 
 Envie o arquivo para o endpoint `/products/import-csv`.
 
